@@ -2,16 +2,15 @@
 <html>
   <head>
     <title>Note Sequencer</title>
-    <script src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
-    <script src="https://unpkg.com/tone"></script>
-    <script src="./sequencer.js"></script> 
-    <link href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
-    <link href="./sequencer.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/tone"></script>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css">
+    <link rel="stylesheet" type="text/css" href="sequencer.css">
   </head>
   <body>
-    <button id="start">Start</button>
-    <button id="stop">Stop</button>
+    <button id="toggle_play">Start/Stop</button>
     <button id="reset">Reset</button>
     <div id="visualization"></div>
+    <script src="sequencer.js"></script> 
   </body>
 </html>

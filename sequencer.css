@@ -15,3 +15,13 @@ body, html {
 .vis-item.motorcycle { background-color: #FA8072; }
 .vis-item.touringcar { background-color: #B4EEB4; }
 .vis-item.endurance  { background-color: #FFFFCC; }
+
+/* .vis-time-axis .vis-grid.vis-minor{
+  border-width: 2px;
+  border-color: pink;
+} */
+
+.vis-time-axis .vis-grid.vis-major{
+  border-width: 5px;
+  border-color: green;
+}
