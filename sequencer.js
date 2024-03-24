@@ -58,65 +58,48 @@ var options = {
     callback(item); // send back adjusted item
   },
   onMove: function (item, callback) {
-    synth.triggerAttackRelease(item.group, ((item.end - item.start).toString()/48));
+    item.start = (new Date(item.start)).getTime();
+    item.end = (new Date(item.end)).getTime();
+    synth.triggerAttackRelease(item.group, ((item.end - item.start)/48));
     callback(item); // send back adjusted item
   },
   onMoving: function (item, callback) {
     item.content = (item.end - item.start).toString();
     callback(item); // send back adjusted item
+  },
+  snap: function (date, scale, step) {
+    return date.getTime() > 0 ? date : 0;
   }
 };
 
 var timeline = new vis.Timeline(container, items, groups, options);
-/* 		groupTemplate: function(group){
-        var label = document.createElement('span');
-        label.innerHTML = group.content;
-        container.insertAdjacentElement('afterBegin',label);
-        var hide = document.createElement('button');
-        hide.innerHTML = 'hide';
-        hide.style.fontSize = 'small';
-        hide.addEventListener('click',function(){
-          groups.update({id: group.id, visible: false});
-        });
-        container.insertAdjacentElement('beforeEnd',hide);
-        return container;
-      }, */
+var synth;
+var beat = 0;
+document.body.addEventListener('click', () => {
+  console.log('Setting up the audio after user click');
+  synth = new Tone.PolySynth(Tone.Synth).toDestination();
+  Tone.Transport.bpm.value = 120;
+}, { once: true });
 
 // Set first time bar
 timeline.addCustomTime(0, 't1');
-timeline.on('timechanged', function (properties) {
-  beat = properties.time.getTime();
-});
+timeline.on('timechanged', function (properties) { beat = properties.time.getTime(); });
 timeline.on('click', function (properties) {
   if(properties.what == "group-label"){
-    console.log("CLICKED GROUP LABEL!");
     synth.triggerAttackRelease(properties.group, 0.5);
   }
 });
-var synth;
-var beat = 0;
 
-  // This is our callback function. It will execute repeatedly 
+// This is our callback function. It will execute repeatedly 
 Tone.Transport.scheduleRepeat((time) => {
-  console.log(time, JSON.stringify(timeline.getCustomTime('t1')));
   timeline.setCustomTime(beat ,'t1');
-  var filtered = items.get({
-    filter: item => (item.start <= beat && item.end >= beat)
-  });
-  // console.log(filtered);
-  if(beat % 48 === 0) {synth.triggerAttackRelease("Bb4", "1n")} else if(beat % 48 === 24) {synth.triggerAttackRelease("F3", "1n")};
-  if(beat % 48 === 0) {synth.triggerAttackRelease("C1", "1n")} else if(beat % 48 === 24) {synth.triggerAttackRelease("E2", "1n")};
+  var notes_to_play = items.get({filter: item => (item.start === beat)});
+  notes = notes_to_play.map(note => note.group);
+  durations = notes_to_play.map(note => (note.end - note.start).toString()/48);
+  synth.triggerAttackRelease(notes, durations)
   beat += 1;
 }, "48hz");
 
 document.getElementById("toggle_play").addEventListener("click", (event) => Tone.Transport.toggle());
-document.getElementById("reset").addEventListener("click", (event) => {
-  beat = 0;
-  timeline.setCustomTime(beat ,'t1');
-});
-
-document.body.addEventListener('click', () => {
-  console.log('I run only once! 😇');
-  synth = new Tone.PolySynth(Tone.Synth).toDestination();
-  Tone.Transport.bpm.value = 120;
-}, { once: true });
+document.getElementById("reset").addEventListener("click", (event) => { timeline.setCustomTime(beat = 0 ,'t1'); });
+timeline.on('itemover', (data) => { console.log(JSON.stringify(items.get(data.item))); });
