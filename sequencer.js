@@ -1,8 +1,11 @@
-var chords = ["A", "A#/Bb", "B", "C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "G#/Ab"];
-var chord_numbers = ["1", "2", "3", "4", "5"];
-var chord_names = chord_numbers.reduce((acc, cur) => acc.concat(chords.map(c => cur + c)), []).concat(["6A", "6A#/Bb", "6B"]);
-var groups = new vis.DataSet(chord_names.map(c => ({content: c, id: c, value: c, className:"instrument"})));
+var notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
+var octaves = ["1", "2", "3", "4", "5"];
+var chords = octaves
+  .reduce((acc, octave) => acc.concat(notes.map(note => note + octave)), [])
+  .concat(["A6", "A#6", "B6"]);
+var groups = new vis.DataSet(chords.map(c => ({content: c, id: c, order: -Tone.Frequency(c), className:"instrument"})));
 
+var id_ctr = 0;
 var items = new vis.DataSet([
 // {start:0, end: 48, group:"1F", className:"1F", content:"",id:"1"},
 // {start: 2, end: 26, group:"2D", className:"2D", content:"",id:"2"},
@@ -29,24 +32,33 @@ var items = new vis.DataSet([
 var container = document.getElementById('visualization');
 var options = {
   type: "range",
-  groupOrder: function (a, b) { return a.value - b.value; },
-  orientation: 'both',
+  orientation: 'top',
+  margin: 0,
+  verticalScroll: true,
+  zoomKey: 'ctrlKey',
   editable: true,
-  groupEditable: true,
+  // groupEditable: true,
   min: 0,
+  max: 1000,
   start: 0,
-  end: 144,
+  end: 336,
   itemsAlwaysDraggable: {item: true, range: true},
   showMajorLabels: true,
+  timeAxis:{scale:'millisecond', step: 4},
   format: {
     minorLabels: (date,scale,step) => (new Date(date).getTime() + ""),
     majorLabels: (date,scale,step) => (new Date(date).getTime() + ""),
   },
-  timeAxis:{scale:'millisecond', step: 48},
   onAdd: function (item, callback) {
     item.start = (new Date(item.start)).getTime();
     item.end = item.start + 12;
     item.content = (item.end - item.start).toString();
+    item.id = id_ctr++;
+    synth.triggerAttackRelease(item.group, 0.5);
+    callback(item); // send back adjusted item
+  },
+  onMove: function (item, callback) {
+    synth.triggerAttackRelease(item.group, ((item.end - item.start).toString()/48));
     callback(item); // send back adjusted item
   },
   onMoving: function (item, callback) {
@@ -57,9 +69,8 @@ var options = {
 
 var timeline = new vis.Timeline(container, items, groups, options);
 /* 		groupTemplate: function(group){
-        var container = document.createElement('div');
         var label = document.createElement('span');
-        label.innerHTML = group.content + ' ';
+        label.innerHTML = group.content;
         container.insertAdjacentElement('afterBegin',label);
         var hide = document.createElement('button');
         hide.innerHTML = 'hide';
@@ -76,41 +87,36 @@ timeline.addCustomTime(0, 't1');
 timeline.on('timechanged', function (properties) {
   beat = properties.time.getTime();
 });
-initialized = false;
+timeline.on('click', function (properties) {
+  if(properties.what == "group-label"){
+    console.log("CLICKED GROUP LABEL!");
+    synth.triggerAttackRelease(properties.group, 0.5);
+  }
+});
+var synth;
 var beat = 0;
 
-// document.getElementById("initialize").addEventListener("click", (event) => {
-// synths = [
-//   new Tone.Synth({ oscillator: { type: "square8" } }).toDestination(),
-//   new Tone.Synth({ oscillator: { type: "square8" } }).toDestination(),
-//   new Tone.Synth({ oscillator: { type: "square8" } }).toDestination(),
-// ];
-// });
   // This is our callback function. It will execute repeatedly 
 Tone.Transport.scheduleRepeat((time) => {
-  // console.log(time, JSON.stringify(timeline.getCustomTime('t1')));
+  console.log(time, JSON.stringify(timeline.getCustomTime('t1')));
   timeline.setCustomTime(beat ,'t1');
   var filtered = items.get({
     filter: item => (item.start <= beat && item.end >= beat)
   });
-  console.log(filtered);
+  // console.log(filtered);
   if(beat % 48 === 0) {synth.triggerAttackRelease("Bb4", "1n")} else if(beat % 48 === 24) {synth.triggerAttackRelease("F3", "1n")};
   if(beat % 48 === 0) {synth.triggerAttackRelease("C1", "1n")} else if(beat % 48 === 24) {synth.triggerAttackRelease("E2", "1n")};
   beat += 1;
 }, "48hz");
-  // set the tempo in beats per minute.
-  // telling the transport to execute our callback function every eight note.
 
-document.getElementById("toggle_play").addEventListener("click", (event) => {
-  if(initialized == false){
-    synth = new Tone.PolySynth(Tone.Synth).toDestination(),
-
-    Tone.Transport.bpm.value = 100;
-    initialized = true;
-  }
-  Tone.Transport.toggle();
-});
+document.getElementById("toggle_play").addEventListener("click", (event) => Tone.Transport.toggle());
 document.getElementById("reset").addEventListener("click", (event) => {
   beat = 0;
   timeline.setCustomTime(beat ,'t1');
 });
+
+document.body.addEventListener('click', () => {
+  console.log('I run only once! 😇');
+  synth = new Tone.PolySynth(Tone.Synth).toDestination();
+  Tone.Transport.bpm.value = 120;
+}, { once: true });
