@@ -1,9 +1,21 @@
+var synth;
+var beat = 0;
+
+var sound_ready = new Promise((resolve) => {
+  document.body.addEventListener('click', () => {
+    console.log('Setting up the audio after user click');
+    synth = new Tone.PolySynth(Tone.Synth).toDestination();
+    Tone.Transport.bpm.value = 120;
+    resolve();
+  }, { once: true });
+});
+
 var notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
 var octaves = ["1", "2", "3", "4", "5"];
 var chords = octaves
   .reduce((acc, octave) => acc.concat(notes.map(note => note + octave)), [])
   .concat(["A6", "A#6", "B6"]);
-var groups = new vis.DataSet(chords.map(c => ({content: c, id: c, order: -Tone.Frequency(c), className:"instrument"})));
+var groups = new vis.DataSet(chords.map(c => ({content: c, id: c, order: -Tone.Frequency(c), className: c.includes("#") ? "black" : "white"})));
 
 var id_ctr = 0;
 var items = new vis.DataSet([
@@ -49,7 +61,8 @@ var options = {
     minorLabels: (date,scale,step) => (new Date(date).getTime() + ""),
     majorLabels: (date,scale,step) => (new Date(date).getTime() + ""),
   },
-  onAdd: function (item, callback) {
+  onAdd: async function (item, callback) {
+    await sound_ready;
     item.start = (new Date(item.start)).getTime();
     item.end = item.start + 12;
     item.content = (item.end - item.start).toString();
@@ -57,7 +70,8 @@ var options = {
     synth.triggerAttackRelease(item.group, 0.5);
     callback(item); // send back adjusted item
   },
-  onMove: function (item, callback) {
+  onMove: async function (item, callback) {
+    await sound_ready;
     item.start = (new Date(item.start)).getTime();
     item.end = (new Date(item.end)).getTime();
     synth.triggerAttackRelease(item.group, ((item.end - item.start)/48));
@@ -73,18 +87,12 @@ var options = {
 };
 
 var timeline = new vis.Timeline(container, items, groups, options);
-var synth;
-var beat = 0;
-document.body.addEventListener('click', () => {
-  console.log('Setting up the audio after user click');
-  synth = new Tone.PolySynth(Tone.Synth).toDestination();
-  Tone.Transport.bpm.value = 120;
-}, { once: true });
 
 // Set first time bar
 timeline.addCustomTime(0, 't1');
 timeline.on('timechanged', function (properties) { beat = properties.time.getTime(); });
-timeline.on('click', function (properties) {
+timeline.on('click', async function (properties) {
+  await sound_ready;
   if(properties.what == "group-label"){
     synth.triggerAttackRelease(properties.group, 0.5);
   }
@@ -102,4 +110,7 @@ Tone.Transport.scheduleRepeat((time) => {
 
 document.getElementById("toggle_play").addEventListener("click", (event) => Tone.Transport.toggle());
 document.getElementById("reset").addEventListener("click", (event) => { timeline.setCustomTime(beat = 0 ,'t1'); });
-timeline.on('itemover', (data) => { console.log(JSON.stringify(items.get(data.item))); });
+document.getElementById("compose").addEventListener("click", (event) => {
+  console.log(items.get({order: "start"}));
+});
+// timeline.on('itemover', (data) => { console.log(JSON.stringify(items.get(data.item))); });

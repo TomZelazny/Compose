@@ -28,6 +28,16 @@ body, html {
   font-size: 10px;
 }
 
+.vis-label.white{
+  background: white;
+  color: black;
+}
+
+.vis-label.black{
+  background: black;
+  color: white;
+}
+
 .vis-time-axis .vis-text {
   font-size: 10px;
   text-align: center;
