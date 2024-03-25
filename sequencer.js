@@ -1,3 +1,68 @@
+let notes_to_numbers = {
+  "A1": "1",
+  "A#1": "2",
+  "B1": "3",
+  "C1": "4",
+  "C#1": "5",
+  "D1": "6",
+  "D#1": "7",
+  "E1": "8",
+  "F1": "9",
+  "F#1": "10",
+  "G1": "11",
+  "G#1": "12",
+  "A2": "13",
+  "A#2": "14",
+  "B2": "15",
+  "C2": "16",
+  "C#2": "17",
+  "D2": "18",
+  "D#2": "19",
+  "E2": "20",
+  "F2": "21",
+  "F#2": "22",
+  "G2": "23",
+  "G#2": "24",
+  "A3": "25",
+  "A#3": "26",
+  "B3": "27",
+  "C3": "28",
+  "C#3": "29",
+  "D3": "30",
+  "D#3": "31",
+  "E3": "32",
+  "F3": "33",
+  "F#3": "34",
+  "G3": "35",
+  "G#3": "36",
+  "A4": "37",
+  "A#4": "38",
+  "B4": "39",
+  "C4": "40",
+  "C#4": "41",
+  "D4": "42",
+  "D#4": "43",
+  "E4": "44",
+  "F4": "45",
+  "F#4": "46",
+  "G4": "47",
+  "G#4": "48",
+  "A5": "49",
+  "A#5": "50",
+  "B5": "51",
+  "C5": "52",
+  "C#5": "53",
+  "D5": "54",
+  "D#5": "55",
+  "E5": "56",
+  "F5": "57",
+  "F#5": "58",
+  "G5": "59",
+  "G#5": "60",
+  "A6": "61",
+  "A#6": "62",
+  "B6": "63"
+}
 var synth;
 var beat = 0;
 
@@ -18,26 +83,7 @@ var chords = octaves
 var groups = new vis.DataSet(chords.map(c => ({content: c, id: c, order: -Tone.Frequency(c), className: c.includes("#") ? "black" : "white"})));
 
 var id_ctr = 0;
-var items = new vis.DataSet([
-// {start:0, end: 48, group:"1F", className:"1F", content:"",id:"1"},
-// {start: 2, end: 26, group:"2D", className:"2D", content:"",id:"2"},
-// {start: 3, end: 27, group:"1A", className:"1A", content:"",id:"3"},
-// {start: 4, end: 28, group:"3C", className:"3C", content:"",id:"4"},
-// {start: 5, end: 29, group:"2E", className:"2E", content:"",id:"5"},
-// {start: 6, end: 10, group:"2C", className:"2C", content:"",id:"6"},
-// {start: 7, end: 12, group:"1C", className:"1C", content:"",id:"7"},
-// {start: 8, end: 13, group:"2D", className:"2D", content:"",id:"8"},
-// {start: 9, end: 10, group:"1C", className:"1C", content:"",id:"9"},
-// {start: 5, end: 10, group:"3E", className:"3E", content:"",id:"10"},
-// {start: 4, end: 8, group:"2C", className:"2C", content:"",id:"11"},
-// {start: 2, end: 4, group:"3D", className:"3D", content:"",id:"12"},
-// {start: 15, end: 15, group:"3F", className:"3F", content:"",id:"13"},
-// {start: 2, end: 15, group:"3F", className:"3F", content:"",id:"14"},
-// {start: 4, end: 15, group:"3D", className:"3D", content:"",id:"15"},
-// {start: 7, end: 15, group:"2B", className:"2B", content:"",id:"16"},
-// {start: 6, end: 15, group:"1B", className:"1B", content:"",id:"17"},
-// {start: 3, end: 15, group:"6B", className:"1B", content:"",id:"18"},
-])
+var items = new vis.DataSet();
 
 
 // create visualization
@@ -49,7 +95,6 @@ var options = {
   verticalScroll: true,
   zoomKey: 'ctrlKey',
   editable: true,
-  // groupEditable: true,
   min: 0,
   max: 1000,
   start: 0,
@@ -108,8 +153,15 @@ Tone.Transport.scheduleRepeat((time) => {
   beat += 1;
 }, "48hz");
 
-document.getElementById("toggle_play").addEventListener("click", (event) => Tone.Transport.toggle());
-document.getElementById("reset").addEventListener("click", (event) => { timeline.setCustomTime(beat = 0 ,'t1'); });
+document.getElementById("toggle_play").addEventListener("click", (e) => Tone.Transport.toggle());
+document.getElementById("reset").addEventListener("click", (e) => { timeline.setCustomTime(beat = 0 ,'t1'); });
+
+function format_song_rom(rom_notes) {
+  return rom_notes.reduce((acc, cur, idx) => {
+    acc += ` assign memory[${idx}] = ${cur.action_type ? `{1'b1, 6'd${cur.duration}, 6'd0, 3'd0}` : `{1'b0, 6'd${cur.duration}, 6'd${cur.note}, 3'd${cur.metadata}}`}\n`;
+    return acc;
+  }, "");
+}
 
 function split_duration(full_duration) {
   let durations_list = Array(Math.floor(full_duration / 63)).fill(63);
@@ -118,7 +170,7 @@ function split_duration(full_duration) {
   }
   return durations_list;
 }
-document.getElementById("compose").addEventListener("click", (event) => {
+document.getElementById("compose").addEventListener("click", (e) => {
   let cur_time = 0;
   let ordered_notes = items.get({order: "start"});
   let rom_notes = [];
@@ -127,9 +179,11 @@ document.getElementById("compose").addEventListener("click", (event) => {
       rom_notes.push(...split_duration(note.start - cur_time).map(d => ({action_type: 1, duration: d})));
       cur_time = note.start;
     }
-    rom_notes.push({action_type: 0, duration: note.end - note.start, note: note.group, metadata: "000"});
+    rom_notes.push({action_type: 0, duration: note.end - note.start, note: notes_to_numbers[note.group], metadata: "000"});
   }
   rom_notes.push(...split_duration(items.max("end").end - cur_time).map(d => ({action_type: 1, duration: d})));
   console.log("rom_notes: ", rom_notes);
+  document.getElementById('code_area').textContent = format_song_rom(rom_notes);
+  document.getElementById('code_modal').showModal();
 });
 // timeline.on('itemover', (data) => { console.log(JSON.stringify(items.get(data.item))); });
