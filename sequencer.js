@@ -110,7 +110,26 @@ Tone.Transport.scheduleRepeat((time) => {
 
 document.getElementById("toggle_play").addEventListener("click", (event) => Tone.Transport.toggle());
 document.getElementById("reset").addEventListener("click", (event) => { timeline.setCustomTime(beat = 0 ,'t1'); });
+
+function split_duration(full_duration) {
+  let durations_list = Array(Math.floor(full_duration / 63)).fill(63);
+  if(full_duration % 63 > 0){
+    durations_list.push(full_duration % 63);
+  }
+  return durations_list;
+}
 document.getElementById("compose").addEventListener("click", (event) => {
-  console.log(items.get({order: "start"}));
+  let cur_time = 0;
+  let ordered_notes = items.get({order: "start"});
+  let rom_notes = [];
+  for (let note of ordered_notes) {
+    if(cur_time < note.start){
+      rom_notes.push(...split_duration(note.start - cur_time).map(d => ({action_type: 1, duration: d})));
+      cur_time = note.start;
+    }
+    rom_notes.push({action_type: 0, duration: note.end - note.start, note: note.group, metadata: "000"});
+  }
+  rom_notes.push(...split_duration(items.max("end").end - cur_time).map(d => ({action_type: 1, duration: d})));
+  console.log("rom_notes: ", rom_notes);
 });
 // timeline.on('itemover', (data) => { console.log(JSON.stringify(items.get(data.item))); });

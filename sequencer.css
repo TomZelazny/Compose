@@ -1,7 +1,7 @@
 body, html {
   font-family: monospace;
   font-size: 16px;
-  background: grey;
+  background: antiquewhite;
 }
 
 #visualization {
@@ -67,6 +67,10 @@ body, html {
 #controlPanel button {
   font-family: monospace;
   font-size: large;
-  background: aquamarine;
+  background: lightsalmon;
   padding: 5px 10px 5px 10px;
+}
+
+.vis-custom-time.t1{
+  width: 5px;
 }
