@@ -55,7 +55,7 @@ var options = {
   start: 0,
   end: 336,
   itemsAlwaysDraggable: {item: true, range: true},
-  showMajorLabels: true,
+  showMajorLabels: false,
   timeAxis:{scale:'millisecond', step: 4},
   format: {
     minorLabels: (date,scale,step) => (new Date(date).getTime() + ""),

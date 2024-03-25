@@ -1,5 +1,5 @@
 body, html {
-  font-family: arial, sans-serif;
+  font-family: monospace;
   font-size: 16px;
   background: grey;
 }
@@ -58,4 +58,15 @@ body, html {
 
 .vis-foreground .vis-group:nth-child(12n+3) {
   border-bottom: 2px solid goldenrod;
+}
+
+#controlPanel {
+  margin-bottom: 5px;
+}
+
+#controlPanel button {
+  font-family: monospace;
+  font-size: large;
+  background: aquamarine;
+  padding: 5px 10px 5px 10px;
 }
