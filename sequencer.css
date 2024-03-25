@@ -64,11 +64,16 @@ body, html {
   margin-bottom: 5px;
 }
 
-button,::file-selector-button {
+button,::file-selector-button, label {
   font-family: monospace;
   font-size: large;
   background: lightsalmon;
   padding: 5px 10px 5px 10px;
+}
+
+label {
+  border: 2px solid black;
+  display: inline-block;
 }
 
 .vis-custom-time.t1{

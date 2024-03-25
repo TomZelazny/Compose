@@ -13,8 +13,11 @@
       <button id="toggle_play">Start/Stop</button>
       <button id="reset">Reset</button>
       <button id="compose">Make song_rom.v</button>
-      <label for="midiSelector">Load MIDI file:</label>
-      <input type="file" id="midiSelector" name="midiSelector" accept="audio/midi" />
+      <label for="midiSelector">
+        <input type="file" id="midiSelector" name="midiSelector" accept="audio/midi" style="display: none;" />
+        Load MIDI file
+      </label>
+      
       <span>Ctrl+scroll to zoom</span>
     </div>
     <div id="visualization"></div>
