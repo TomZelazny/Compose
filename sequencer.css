@@ -46,3 +46,16 @@ body, html {
   border-width: 5px;
   border-color: green;
 }
+
+.vis-grid.vis-vertical.vis-minor:nth-child(12n+1) {
+  border-color: black;
+  border-width: 3px;
+}
+
+.vis-grid.vis-minor:nth-child(3n+1) {
+  border-color: black;
+}
+
+.vis-foreground .vis-group:nth-child(12n+3) {
+  border-bottom: 2px solid goldenrod;
+}
