@@ -4,6 +4,7 @@
     <title>Note Sequencer</title>
     <script type="text/javascript" src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
     <script type="text/javascript" src="https://unpkg.com/tone"></script>
+    <script type="text/javascript" src="https://unpkg.com/@tonejs/midi"></script>
     <link rel="stylesheet" type="text/css" href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css">
     <link rel="stylesheet" type="text/css" href="sequencer.css">
   </head>
@@ -12,6 +13,8 @@
       <button id="toggle_play">Start/Stop</button>
       <button id="reset">Reset</button>
       <button id="compose">Make song_rom.v</button>
+      <label for="midiSelector">Load MIDI file:</label>
+      <input type="file" id="midiSelector" name="midiSelector" accept="audio/midi" />
       <span>Ctrl+scroll to zoom</span>
     </div>
     <div id="visualization"></div>

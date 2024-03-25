@@ -182,3 +182,37 @@ document.getElementById("compose").addEventListener("click", (e) => {
   document.getElementById('code_modal').showModal();
 });
 // timeline.on('itemover', (data) => { console.log(JSON.stringify(items.get(data.item))); });
+
+
+function parseFile(file) {
+  //read the file
+  const reader = new FileReader();
+  reader.onload = function (e) {
+      const midi = new Midi(e.target.result);
+      currentMidi = midi;
+      console.log(JSON.stringify(midi, undefined, 2));
+      midi.tracks.forEach(track => {
+          let new_items = track.notes.map(note => {
+            return {
+                start: Math.round(note.time * 48),
+                end: Math.round(48 * (note.time + note.duration)),
+                group: note.name,
+                content: Math.round(48 * note.duration).toString()
+            }
+        });
+        console.log(new_items);
+        items.add(new_items);
+      });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+document.getElementById("midiSelector").addEventListener("cancel", () => {
+  console.log("Cancelled.");
+});
+document.getElementById("midiSelector").addEventListener("change", () => {
+  if (document.getElementById("midiSelector").files.length == 1) {
+    console.log("File selected: ", document.getElementById("midiSelector").files[0]);
+    parseFile(document.getElementById("midiSelector").files[0]);
+  }
+});
