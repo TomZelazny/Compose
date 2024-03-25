@@ -65,6 +65,7 @@ let notes_to_numbers = {
 }
 var synth;
 var beat = 0;
+var id_ctr = 0;
 
 var sound_ready = new Promise((resolve) => {
   document.body.addEventListener('click', () => {
@@ -81,13 +82,7 @@ var chords = octaves
   .reduce((acc, octave) => acc.concat(notes.map(note => note + octave)), [])
   .concat(["A6", "A#6", "B6"]);
 var groups = new vis.DataSet(chords.map(c => ({content: c, id: c, order: -Tone.Frequency(c), className: c.includes("#") ? "black" : "white"})));
-
-var id_ctr = 0;
 var items = new vis.DataSet();
-
-
-// create visualization
-var container = document.getElementById('visualization');
 var options = {
   type: "range",
   orientation: 'top',
@@ -130,7 +125,7 @@ var options = {
     return date.getTime() > 0 ? date : 0;
   }
 };
-
+var container = document.getElementById('visualization');
 var timeline = new vis.Timeline(container, items, groups, options);
 
 // Set first time bar
@@ -158,7 +153,7 @@ document.getElementById("reset").addEventListener("click", (e) => { timeline.set
 
 function format_song_rom(rom_notes) {
   return rom_notes.reduce((acc, cur, idx) => {
-    acc += ` assign memory[${idx}] = ${cur.action_type ? `{1'b1, 6'd${cur.duration}, 6'd0, 3'd0}` : `{1'b0, 6'd${cur.duration}, 6'd${cur.note}, 3'd${cur.metadata}}`}\n`;
+    acc += `assign memory[${idx}] = ${cur.action_type ? `{1'b1, 6'd${cur.duration}, 6'd0, 3'b000}` : `{1'b0, 6'd${cur.duration}, 6'd${cur.note}, 3'b${cur.metadata}}`}\n`;
     return acc;
   }, "");
 }
