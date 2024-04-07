@@ -174,7 +174,7 @@ document.getElementById("compose").addEventListener("click", (e) => {
       rom_notes.push(...split_duration(note.start - cur_time).map(d => ({action_type: 1, duration: d})));
       cur_time = note.start;
     }
-    rom_notes.push({action_type: 0, duration: note.end - note.start, note: notes_to_numbers[note.group], metadata: "000"});
+    rom_notes.push({action_type: 0, duration: note.end - note.start, note: notes_to_numbers[note.group] || "0", metadata: "000"});
   }
   rom_notes.push(...split_duration(items.max("end").end - cur_time).map(d => ({action_type: 1, duration: d})));
   console.log("rom_notes: ", rom_notes);
@@ -190,7 +190,7 @@ function parseFile(file) {
   reader.onload = function (e) {
       const midi = new Midi(e.target.result);
       currentMidi = midi;
-      console.log(JSON.stringify(midi, undefined, 2));
+      console.log(midi.tracks);
       midi.tracks.forEach(track => {
           let new_items = track.notes.map(note => {
             return {
