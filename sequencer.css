@@ -78,4 +78,12 @@ label {
 
 .vis-custom-time.t1{
   width: 5px;
+  background-color: #B83A4B;
+}
+
+#banner {
+  font-size: 2em;
+  color: #B83A4B;
+  position: absolute;
+  right: 10px;
 }
